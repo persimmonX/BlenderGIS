@@ -9,11 +9,11 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def lonlat2xyz(R, lon, lat):
+def lonlat2xyz(R,minR, lon, lat):
 	lon, lat = radians(lon), radians(lat)
 	x = R * cos(lat) * cos(lon)
 	y = R * cos(lat) * sin(lon)
-	z = R *sin(lat)
+	z = minR *sin(lat)
 	return Vector((x, y, z))
 
 
@@ -23,8 +23,8 @@ class OBJECT_OT_earth_sphere(Operator):
 	bl_description = "Transform longitude/latitude data to a sphere like earth globe"
 	bl_options = {"REGISTER", "UNDO"}
 
-	radius: IntProperty(name = "Radius", default=100, description="Sphere radius", min=1)
-
+	radius: IntProperty(name = "Radius", default=6378137, description="Sphere radius", min=1)
+	minRadius: IntProperty(name = "minRadius", default=6356752.314245179, description="short Sphere radius", min=1)
 	def execute(self, context):
 		scn = bpy.context.scene
 		objs = bpy.context.selected_objects
@@ -51,7 +51,7 @@ class OBJECT_OT_earth_sphere(Operator):
 			for vertex in mesh.vertices:
 				co = m @ vertex.co
 				lon, lat = co.x, co.y
-				vertex.co = m.inverted() @ lonlat2xyz(self.radius, lon, lat)
+				vertex.co = m.inverted() @ lonlat2xyz(self.radius,self.minRadius, lon, lat)
 
 		return {'FINISHED'}
 
